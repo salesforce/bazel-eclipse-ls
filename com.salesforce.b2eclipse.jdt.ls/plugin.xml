@@ -17,12 +17,20 @@
             id="com.salesforce.b2eclipse.BAZEL_CONTAINER">
       </classpathContainerInitializer>
    </extension>
-      <extension
+   <extension
          id="importers"
          point="org.eclipse.jdt.ls.core.importers">
          <importer
             id = "bazelProjectImporter"
             order ="500"
             class = "com.salesforce.b2eclipse.managers.BazelProjectImporter"/>
+   </extension>
+   <extension
+   		 id="buildSupporter"
+         point="org.eclipse.jdt.ls.core.buildSupport">
+         <buildSupport
+         	id="bazelSupport"
+         	order="500"
+         	class="com.salesforce.b2eclipse.managers.BazelBuildSupport" />
    </extension>
 </plugin>

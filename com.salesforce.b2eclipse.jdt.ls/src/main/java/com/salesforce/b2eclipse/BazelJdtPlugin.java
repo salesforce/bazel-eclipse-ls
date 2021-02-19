@@ -148,13 +148,6 @@ public class BazelJdtPlugin extends Plugin {
         JavaCoreHelper eclipseJavaCoreHelper = new EclipseJavaCoreHelper();
 
         startInternal(aspectLocation, commandBuilder, eclipseResourceHelper, eclipseJavaCoreHelper);
-
-        Map<String, Object> configuration = JavaLanguageServerPlugin.getPreferencesManager().getPreferences().asMap();
-        if (configuration == null) {
-            configuration = new HashMap<>();
-        }
-        B2EPreferncesManager preferencesManager = B2EPreferncesManager.getInstance();
-        preferencesManager.setConfiguration(configuration);
     }
 
     /**

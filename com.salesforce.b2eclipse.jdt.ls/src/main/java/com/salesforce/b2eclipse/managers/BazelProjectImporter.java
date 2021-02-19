@@ -36,13 +36,16 @@ package com.salesforce.b2eclipse.managers;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.ls.core.internal.AbstractProjectImporter;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 
 import com.salesforce.b2eclipse.abstractions.WorkProgressMonitor;
 import com.salesforce.b2eclipse.config.BazelEclipseProjectFactory;
@@ -58,6 +61,9 @@ public final class BazelProjectImporter extends AbstractProjectImporter {
     @Override
     public boolean applies(IProgressMonitor monitor) throws OperationCanceledException, CoreException {
         B2EPreferncesManager preferencesManager = B2EPreferncesManager.getInstance();
+
+        setPluginConfig(preferencesManager);
+        
         if (preferencesManager != null && !preferencesManager.isImportBazelEnabled()) {
             return false;
         }
@@ -96,6 +102,14 @@ public final class BazelProjectImporter extends AbstractProjectImporter {
     @Override
     public void reset() {
 
+    }
+    
+    private void setPluginConfig(B2EPreferncesManager preferencesManager) {
+    	Map<String, Object> configuration = JavaLanguageServerPlugin.getPreferencesManager().getPreferences().asMap();
+        if (configuration == null) {
+            configuration = new HashMap<>();
+        }
+        preferencesManager.setConfiguration(configuration);
     }
 
 }
