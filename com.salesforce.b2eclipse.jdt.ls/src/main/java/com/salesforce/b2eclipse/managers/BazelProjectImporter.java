@@ -47,7 +47,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.ls.core.internal.AbstractProjectImporter;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 
-import com.salesforce.b2eclipse.abstractions.WorkProgressMonitor;
 import com.salesforce.b2eclipse.config.BazelEclipseProjectFactory;
 import com.salesforce.b2eclipse.importer.BazelProjectImportScanner;
 import com.salesforce.b2eclipse.model.BazelPackageInfo;
@@ -56,26 +55,18 @@ import com.salesforce.b2eclipse.runtime.impl.EclipseWorkProgressMonitor;
 @SuppressWarnings("restriction")
 public final class BazelProjectImporter extends AbstractProjectImporter {
 
-    private static final String WORKSPACE_FILE_NAME = "WORKSPACE";
-
-    @Override
+	@Override
     public boolean applies(IProgressMonitor monitor) throws OperationCanceledException, CoreException {
-        B2EPreferncesManager preferencesManager = B2EPreferncesManager.getInstance();
-
-        setPluginConfig(preferencesManager);
+    	// Since the actual preferences come from the VSCode via LSP, it is not defined
+    	// when we get them. But this is the place where we need them for sure,
+    	// this is why we obtain them here. Right now the preferences have already
+    	// come from VSCode.
+    	final B2EPreferncesManager preferencesManager = preparePreferences();
+    	
+    	if (!checkIsBazelImportEnabled(preferencesManager) || !checkRootFolder()) return false;
         
-        if (preferencesManager != null && !preferencesManager.isImportBazelEnabled()) {
-            return false;
-        }
-        if (!rootFolder.exists() || !rootFolder.isDirectory()) {
-            return false;
-        }
-        File workspaceFile = new File(rootFolder, WORKSPACE_FILE_NAME);
-        if (workspaceFile.exists()) {
-            directories = Arrays.asList(Path.of(rootFolder.getPath(), new String[0]));
-        } else {
-            return false;
-        }
+        // See MavenProjectImporter for details why this side-effect is here
+        directories = Arrays.asList(Path.of(rootFolder.getPath(), new String[0]));
 
         return true;
 
@@ -83,33 +74,49 @@ public final class BazelProjectImporter extends AbstractProjectImporter {
 
     @Override
     public void importToWorkspace(IProgressMonitor monitor) throws OperationCanceledException, CoreException {
-        BazelProjectImportScanner scanner = new BazelProjectImportScanner();
+        final BazelPackageInfo workspaceRootPackage = new BazelProjectImportScanner().getProjects(rootFolder);
 
-        BazelPackageInfo workspaceRootPackage = scanner.getProjects(rootFolder);
-
-        if (workspaceRootPackage == null) {
-            throw new IllegalArgumentException();
-        }
-        List<BazelPackageInfo> bazelPackagesToImport =
-                workspaceRootPackage.getChildPackageInfos().stream().collect(Collectors.toList());
-
-        WorkProgressMonitor progressMonitor = new EclipseWorkProgressMonitor(null);
-
-        BazelEclipseProjectFactory.importWorkspace(workspaceRootPackage, bazelPackagesToImport, progressMonitor,
-            monitor);
+        BazelEclipseProjectFactory.importWorkspace( workspaceRootPackage
+        										  , tryObtainPackagesToImport(workspaceRootPackage)
+    										  	  , new EclipseWorkProgressMonitor(null)
+    										  	  , monitor
+    										  	  );
     }
 
     @Override
     public void reset() {
 
     }
-    
-    private void setPluginConfig(B2EPreferncesManager preferencesManager) {
-    	Map<String, Object> configuration = JavaLanguageServerPlugin.getPreferencesManager().getPreferences().asMap();
-        if (configuration == null) {
-            configuration = new HashMap<>();
-        }
-        preferencesManager.setConfiguration(configuration);
-    }
 
+    ///////
+    
+    private List<BazelPackageInfo> tryObtainPackagesToImport(final BazelPackageInfo workspaceRootPackage) {
+    	if (workspaceRootPackage == null) {
+            throw new IllegalArgumentException();
+        }
+    	
+        return workspaceRootPackage.getChildPackageInfos().stream().collect(Collectors.toList());
+    }
+    
+    private B2EPreferncesManager preparePreferences() {
+    	final Map<String, Object> origConfig = JavaLanguageServerPlugin.getPreferencesManager().getPreferences().asMap();
+    	final Map<String, Object> configuration = origConfig != null? origConfig : new HashMap<>();
+    	final B2EPreferncesManager preferencesManager = B2EPreferncesManager.getInstance();
+    	
+        preferencesManager.setConfiguration(configuration);
+        
+        return preferencesManager;
+    }
+    
+    
+    private boolean checkRootFolder() {
+    	return rootFolder != null &&
+    		   rootFolder.exists() &&
+    		   rootFolder.isDirectory() &&
+    		   new File(rootFolder, "WORKSPACE").exists();
+    }
+    
+    private boolean checkIsBazelImportEnabled(final B2EPreferncesManager preferencesManager) {
+        return preferencesManager != null && preferencesManager.isImportBazelEnabled();
+    }
 }
