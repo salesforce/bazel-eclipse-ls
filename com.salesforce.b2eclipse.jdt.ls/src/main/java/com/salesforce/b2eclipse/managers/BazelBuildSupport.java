@@ -89,4 +89,14 @@ public class BazelBuildSupport implements IBuildSupport{
 					.filter(importer -> importer instanceof BazelProjectImporter)
 					.findFirst();
 	}
+
+	@Override
+	public String buildToolName() {
+		return "Bazel";
+	}
+	
+	@Override
+	public boolean hasTemporaryProjectFolder() {
+		return true;
+	}
 }
