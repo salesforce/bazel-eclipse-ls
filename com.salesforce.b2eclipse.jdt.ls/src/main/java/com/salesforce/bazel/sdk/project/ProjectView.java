@@ -39,11 +39,13 @@ import com.salesforce.bazel.sdk.util.BazelConstants;
  * @since March 2020
  */
 public class ProjectView {
+    
+    private static final int INIT_INDENT = 3;
 
-    static String DIRECTORIES_SECTION = "directories:";
-    static String TARGETS_SECTION = "targets:";
-    static String DIRECTORIES_COMMENT = "# Add the directories you want added as source here";
-    static String INDENT = "  ";
+    private static final String DIRECTORIES_SECTION = "directories:";
+    private static final String TARGETS_SECTION = "targets:";
+    private static final String DIRECTORIES_COMMENT = "# Add the directories you want added as source here";
+    private static final String INDENT = "  ";
 
     private final File rootWorkspaceDirectory;
     private final Map<BazelPackageLocation, Integer> packageToLineNumber;
@@ -172,9 +174,9 @@ public class ProjectView {
         if (!(other instanceof ProjectView)) {
             return false;
         }
-        ProjectView o = (ProjectView)other;
-        return packageToLineNumber.keySet().equals(o.packageToLineNumber.keySet()) &&
-                targetToLineNumber.keySet().equals(o.targetToLineNumber.keySet());
+        ProjectView o = (ProjectView) other;
+        return packageToLineNumber.keySet().equals(o.packageToLineNumber.keySet()) 
+                && targetToLineNumber.keySet().equals(o.targetToLineNumber.keySet());
     }
 
     private List<BazelLabel> getTargetsForDirectory(String directory) {
@@ -193,12 +195,11 @@ public class ProjectView {
 
     private static void initSections(List<BazelPackageLocation> packages, List<BazelLabel> targets,
             Map<BazelPackageLocation, Integer> packageToLineNumber,
-            Map<BazelLabel, Integer> targetToLineNumber)
-    {
+            Map<BazelLabel, Integer> targetToLineNumber) {
         // directories:
         //   # comment
         // therefore:
-        int lineNumber = 3;
+        int lineNumber = INIT_INDENT;
         for (BazelPackageLocation pack : packages) {
             packageToLineNumber.put(pack, lineNumber);
             lineNumber += 1;
@@ -213,8 +214,7 @@ public class ProjectView {
 
     private static void parseSections(String content, File rootWorkspaceDirectory,
             Map<BazelPackageLocation, Integer> packageToLineNumber,
-            Map<BazelLabel, Integer> targetToLineNumber)
-    {
+            Map<BazelLabel, Integer> targetToLineNumber) {
         boolean withinDirectoriesSection = false;
         boolean withinTargetsSection = false;
         int lineNumber = 0;

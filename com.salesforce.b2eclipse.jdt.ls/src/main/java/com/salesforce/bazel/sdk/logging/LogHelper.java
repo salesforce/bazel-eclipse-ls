@@ -44,8 +44,8 @@ package com.salesforce.bazel.sdk.logging;
  * @author Blaine Buxton
  *
  */
-public class LogHelper {
-    final Class<?> from;
+public final class LogHelper {
+    private final Class<?> from;
 
     public static LogHelper log(Class<?> from) {
         return new LogHelper(from);

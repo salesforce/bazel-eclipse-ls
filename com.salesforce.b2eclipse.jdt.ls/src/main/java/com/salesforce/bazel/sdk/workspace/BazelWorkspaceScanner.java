@@ -46,13 +46,15 @@ import com.salesforce.bazel.sdk.model.BazelPackageInfo;
  * subtree below that.
  */
 public class BazelWorkspaceScanner {
+    
+    private static final int MEANINGFUL_DIR_NAME_THRESHOLD = 3;
 
     public static String getBazelWorkspaceName(String bazelWorkspaceRootDirectory) {
         // TODO pull the workspace name out of the WORKSPACE file, until then use the directory name (e.g. bazel-demo)
         String bazelWorkspaceName = "workspace";
         if (bazelWorkspaceRootDirectory != null) {
             int lastSlash = bazelWorkspaceRootDirectory.lastIndexOf(File.separator);
-            if (lastSlash >= 0 && (bazelWorkspaceRootDirectory.length() - lastSlash) > 3) {
+            if (lastSlash >= 0 && (bazelWorkspaceRootDirectory.length() - lastSlash) > MEANINGFUL_DIR_NAME_THRESHOLD) {
                 // add the directory name to the label, if it is meaningful (>3 chars)
                 bazelWorkspaceName = bazelWorkspaceRootDirectory.substring(lastSlash + 1);
             } else {

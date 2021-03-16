@@ -6,7 +6,11 @@ import java.io.IOException;
 /**
  * Static utilities.
  */
-public class BazelPathHelper {
+public final class BazelPathHelper {
+    
+    private BazelPathHelper() {
+        
+    }
 
     /**
      * Resolve softlinks and other abstractions in the workspace paths.

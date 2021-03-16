@@ -41,7 +41,7 @@ package com.salesforce.bazel.sdk.logging;
  * This is an interface so that tests can use it and verify logging
  */
 public abstract class LoggerFacade {
-    static LoggerFacade instance = new BasicLoggerFacade();
+    private static LoggerFacade instance = new BasicLoggerFacade();
 
     /**
      * Default instance, this can change - DO NOT CACHE or STORE

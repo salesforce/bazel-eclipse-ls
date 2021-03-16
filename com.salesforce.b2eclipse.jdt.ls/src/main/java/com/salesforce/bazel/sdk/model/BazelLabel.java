@@ -123,9 +123,9 @@ public class BazelLabel {
      * @return true if this instance represents a concrete label, false otherwise
      */
     public boolean isConcrete() {
-        return !(this.localLabelPart.endsWith("*") ||
-               this.localLabelPart.endsWith("...") ||
-               this.localLabelPart.endsWith("all"));
+        return !(this.localLabelPart.endsWith("*") 
+                || this.localLabelPart.endsWith("...") 
+                || this.localLabelPart.endsWith("all"));
     }
 
     /**
@@ -258,9 +258,9 @@ public class BazelLabel {
     }
 
     private static BazelLabel withRepositoryNameAndLocalLabelPart(String repositoryName, String localLabelPart) {
-        return repositoryName == null ?
-            new BazelLabel(localLabelPart) :
-            new BazelLabel("@" + repositoryName + "//" + localLabelPart);
+        return repositoryName == null 
+                ? new BazelLabel(localLabelPart) 
+                : new BazelLabel("@" + repositoryName + "//" + localLabelPart);
     }
 
     private static String sanitizePackagePath(String path) {

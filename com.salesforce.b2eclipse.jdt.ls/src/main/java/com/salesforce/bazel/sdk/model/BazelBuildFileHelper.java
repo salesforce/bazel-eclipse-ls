@@ -44,7 +44,12 @@ import java.util.Arrays;
 import com.google.common.annotations.VisibleForTesting;
 import com.salesforce.bazel.sdk.logging.LogHelper;
 
-public class BazelBuildFileHelper {
+public final class BazelBuildFileHelper {
+    
+    private BazelBuildFileHelper() {
+        
+    }
+    
     static final LogHelper LOG = LogHelper.log(BazelBuildFileHelper.class);
     /**
      * List of Strings that can be found in BUILD files that will indicate a Bazel package that is supported by the
@@ -55,8 +60,8 @@ public class BazelBuildFileHelper {
      * enough to trigger the detector.
      */
     public static final String[] JAVA_PROJECT_INDICATORS =
-            { "java_binary", "java_library", "java_test", "java_web_test_suite", "springboot", "springboot_test",
-                    "java_proto_library", "java_lite_proto_library", "java_grpc_library" };
+            {"java_binary", "java_library", "java_test", "java_web_test_suite", "springboot", "springboot_test",
+                    "java_proto_library", "java_lite_proto_library", "java_grpc_library"};
 
     /**
      * Parses a File, presumed to be a Bazel BUILD file, looking for indications that it contains Java rules.

@@ -60,7 +60,7 @@ import com.salesforce.bazel.sdk.workspace.BazelWorkspaceScanner;
 public final class BazelProjectImporter extends AbstractProjectImporter {
 
     private static final String WORKSPACE_FILE_NAME = "WORKSPACE";
-    
+
     private static final String BAZELPROJECT_FILE_NAME = ".bazelproject";
 
     @Override
@@ -85,46 +85,45 @@ public final class BazelProjectImporter extends AbstractProjectImporter {
 
     @Override
     public void importToWorkspace(IProgressMonitor monitor) throws OperationCanceledException, CoreException {
-    	try {
-        BazelWorkspaceScanner workspaceScanner = new BazelWorkspaceScanner();
-        BazelPackageInfo workspaceRootPackage = workspaceScanner.getPackages(rootFolder);
-        
-        if (workspaceRootPackage == null) {
-            throw new IllegalArgumentException();
-        }
-        
-        List<BazelPackageInfo> allBazelPackages = new ArrayList<>(
-        		workspaceRootPackage.getChildPackageInfos()
-		);
-        
-        List<BazelPackageInfo> bazelPackagesToImport = allBazelPackages;
-        
-        File targetsFile = new File(rootFolder, BAZELPROJECT_FILE_NAME);
-        
-        if (targetsFile.exists()) {
-	        ProjectView projectView = new ProjectView(rootFolder, readFile(targetsFile.getPath()));
-	        
-	        Set<String> projectViewPaths = projectView.getDirectories().stream()
-	                .map(p -> p.getBazelPackageFSRelativePath()).collect(Collectors.toSet());
-	        
-	        bazelPackagesToImport = allBazelPackages.stream().filter(bpi -> projectViewPaths.contains(bpi.getBazelPackageFSRelativePath()))
-	        		.collect(Collectors.toList());
-        }
+        try {
+            BazelWorkspaceScanner workspaceScanner = new BazelWorkspaceScanner();
+            BazelPackageInfo workspaceRootPackage = workspaceScanner.getPackages(rootFolder);
 
-        WorkProgressMonitor progressMonitor = new EclipseWorkProgressMonitor(null);
+            if (workspaceRootPackage == null) {
+                throw new IllegalArgumentException();
+            }
 
-        BazelEclipseProjectFactory.importWorkspace(workspaceRootPackage, bazelPackagesToImport, progressMonitor,
-            monitor);
-    	} catch (IOException e) {
-    		// TODO: proper handling here
-    	}
+            List<BazelPackageInfo> allBazelPackages = new ArrayList<>(workspaceRootPackage.getChildPackageInfos());
+
+            List<BazelPackageInfo> bazelPackagesToImport = allBazelPackages;
+
+            File targetsFile = new File(rootFolder, BAZELPROJECT_FILE_NAME);
+
+            if (targetsFile.exists()) {
+                ProjectView projectView = new ProjectView(rootFolder, readFile(targetsFile.getPath()));
+
+                Set<String> projectViewPaths = projectView.getDirectories().stream()
+                        .map(p -> p.getBazelPackageFSRelativePath()).collect(Collectors.toSet());
+
+                bazelPackagesToImport = allBazelPackages.stream()
+                        .filter(bpi -> projectViewPaths.contains(bpi.getBazelPackageFSRelativePath()))
+                        .collect(Collectors.toList());
+            }
+
+            WorkProgressMonitor progressMonitor = new EclipseWorkProgressMonitor(null);
+
+            BazelEclipseProjectFactory.importWorkspace(workspaceRootPackage, bazelPackagesToImport, progressMonitor,
+                    monitor);
+        } catch (IOException e) {
+            // TODO: proper handling here
+        }
     }
 
     @Override
     public void reset() {
 
     }
-    
+
     private static String readFile(String path) {
         try {
             return new String(Files.readAllBytes(Paths.get(path)));

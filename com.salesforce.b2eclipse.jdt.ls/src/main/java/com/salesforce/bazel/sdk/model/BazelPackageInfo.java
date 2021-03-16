@@ -34,11 +34,14 @@
 package com.salesforce.bazel.sdk.model;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Model class for a Bazel Java package. It is a node in a tree of the hierarchy of packages. The root node in this tree
@@ -65,8 +68,8 @@ public class BazelPackageInfo implements BazelPackageLocation {
 
     private BazelPackageInfo parent;
     private final boolean isWorkspaceRoot;
-    protected final File workspaceRoot;
-    protected BazelPackageInfo workspaceRootNode;
+    private final File workspaceRoot;
+    private BazelPackageInfo workspaceRootNode;
 
     public static final String WORKSPACE_FILENAME = "WORKSPACE";
     public static final String WORKSPACE_FILENAME_ALT = "WORKSPACE.bazel";
@@ -314,20 +317,11 @@ public class BazelPackageInfo implements BazelPackageLocation {
             return computedPackageName;
         }
 
-        // split the file system path by OS path separator
-        String[] pathElements = relativeWorkspacePath.split(File.separator);
-
-        // assemble the path elements into a proper Bazel package name
-        String name = "/";
-        for (String e : pathElements) {
-            if (e.isEmpty()) {
-                continue;
-            }
-            name = name + "/" + e;
-        }
-
-        // set computedPackageName only when done computing it, to avoid threading issues
-        computedPackageName = name;
+        computedPackageName = StreamSupport.stream(
+                Paths.get(relativeWorkspacePath).spliterator(),
+                false
+        ).map(Object::toString).collect(Collectors.joining("/", "//", ""));
+        
         // and cache the last segment as well
         getBazelPackageNameLastSegment();
 
@@ -436,18 +430,28 @@ public class BazelPackageInfo implements BazelPackageLocation {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        
+        if (getClass() != obj.getClass()) {
             return false;
+        }
+        
         BazelPackageInfo other = (BazelPackageInfo) obj;
+        
         if (computedPackageName == null) {
-            if (other.computedPackageName != null)
+            if (other.computedPackageName != null) {
                 return false;
-        } else if (!computedPackageName.equals(other.computedPackageName))
+            }
+        } else if (!computedPackageName.equals(other.computedPackageName)) {
             return false;
+        }
+        
         return true;
     }
 

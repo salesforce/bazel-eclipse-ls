@@ -10,7 +10,7 @@ import com.salesforce.bazel.sdk.util.BazelPathHelper;
 import com.salesforce.bazel.sdk.util.WorkProgressMonitor;
 
 public class BazelPackageFinder {
-    LogHelper logger;
+    private LogHelper logger;
 
     public BazelPackageFinder() {
         logger = LogHelper.log(this.getClass());
